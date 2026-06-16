@@ -1,7 +1,14 @@
 import { chromium } from 'playwright';
 const b = await chromium.launch();
-const p = await b.newPage();
-await p.setViewportSize({ width: 1440, height: 900 });
-await p.goto('http://localhost:5173', { waitUntil: 'networkidle', timeout: 20000 });
-await p.screenshot({ path: 'logo-size.png', clip: { x: 0, y: 0, width: 360, height: 80 } });
+const main = await b.newPage();
+await main.setViewportSize({ width: 1440, height: 900 });
+const errs = [];
+main.on('pageerror', e => errs.push(e.message));
+await main.goto('http://localhost:5173', { waitUntil: 'networkidle', timeout: 20000 });
+await main.screenshot({ path: 'ok-main.png' });
+const admin = await b.newPage();
+await admin.goto('http://localhost:5173/admin', { waitUntil: 'networkidle', timeout: 20000 });
+await admin.setViewportSize({ width: 1440, height: 900 });
+await admin.screenshot({ path: 'ok-admin.png' });
+console.log('Errors:', JSON.stringify(errs));
 await b.close();
