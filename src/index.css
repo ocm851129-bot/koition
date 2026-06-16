@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Italiana&family=Manrope:wght@400;600&family=Marck+Script&display=swap');
+@import url('https://db.onlinewebfonts.com/c/e66905e07608167a84e6ad52f638c3c6?family=Helvetica+Now+Var');
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 400;
+  font-style: normal;
+  src: url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff2') format('woff2'),
+       url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff') format('woff'),
+       url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 500;
+  font-style: normal;
+  src: url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff2') format('woff2'),
+       url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff') format('woff'),
+       url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.ttf') format('truetype');
+}
+
+@theme {
+  --font-manrope: "Manrope", sans-serif;
+  --font-italiana: "Italiana", serif;
+  --font-marck: "Marck Script", cursive;
+  --font-helvetica-now: "Helvetica Now Var", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Mazzard H', 'Helvetica Now Var', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#root { width: 100%; }
+
+/* ─── Hero ─────────────────────── */
+.video-hero-section { padding: 70px 32px 48px; }
+
+/* ─── Animations ────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Reusable grid classes ─────── */
+/* (desktop defaults are set inline; these classes allow responsive overrides) */
+
+/* ════════════════════════════════════
+   TABLET  768px – 1024px
+   ════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .video-hero-section { padding: 80px 28px 40px; }
+
+  /* Reduce heavy section padding */
+  .section-pad-lg { padding-top: 80px !important; padding-bottom: 80px !important; }
+
+  /* 3-col → 2-col */
+  .stats-grid   { grid-template-columns: 1fr 1fr !important; }
+  .kpi-grid     { grid-template-columns: 1fr 1fr !important; }
+  .sol-grid     { grid-template-columns: 1fr 1fr !important; }
+  .footer-grid  { grid-template-columns: 1fr 1fr !important; }
+
+  /* Factory: keep side-by-side but compress */
+  .factory-detail { padding: 32px 28px !important; }
+}
+
+/* ════════════════════════════════════
+   MOBILE  ≤ 767px
+   ════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Nav */
+  .hidden-mobile { display: none !important; }
+  .show-mobile   { display: flex !important; }
+
+  /* Hero */
+  .video-hero-section { padding: 88px 20px 36px; }
+
+  /* Global section padding override */
+  section { padding-left: 20px !important; padding-right: 20px !important; }
+  section[style*="padding: '100px 32px'"],
+  section[style*="padding: 100px"] {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  /* All grids → single column */
+  .stats-grid,
+  .kpi-grid,
+  .business-panel,
+  .factory-grid,
+  .zerotrack-grid,
+  .archive-grid,
+  .news-grid,
+  .contact-grid,
+  .sol-featured,
+  .sol-grid,
+  .media-grid,
+  .research-grid { grid-template-columns: 1fr !important; }
+
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* History timeline */
+  .history-row   { flex-direction: column !important; gap: 12px !important; }
+  .history-year  { width: auto !important; padding-right: 0 !important; display: flex !important; align-items: center !important; gap: 12px !important; }
+  .history-line  { display: none !important; }
+  .history-dot   { display: none !important; }
+
+  /* Digital Factory: stack list then detail */
+  .factory-step-list { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+  .factory-detail    { padding: 28px 20px !important; }
+
+  /* Zerotrack dashboard: hide bar chart on very small screens */
+  .dashboard-bar { display: none !important; }
+
+  /* Reduce font sizes that were set large inline */
+  h1 { font-size: clamp(28px, 8vw, 48px) !important; }
+  h2 { font-size: clamp(22px, 6vw, 36px) !important; }
+
+  /* Buttons: full width on mobile */
+  .btn-group { flex-direction: column !important; }
+  .btn-group a { text-align: center !important; }
+
+  /* Certifications grid: 2-col on mobile */
+  .cert-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ════════════════════════════════════
+   SMALL MOBILE  ≤ 480px
+   ════════════════════════════════════ */
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr !important; }
+  .cert-grid   { grid-template-columns: 1fr !important; }
+  .sol-grid    { grid-template-columns: 1fr !important; }
+
+  .video-hero-section { padding: 80px 16px 32px; }
+  section { padding-left: 16px !important; padding-right: 16px !important; }
+}
+
+/* ════════════════════════════════════
+   DESKTOP only
+   ════════════════════════════════════ */
+@media (min-width: 768px) {
+  .show-mobile { display: none !important; }
+}
