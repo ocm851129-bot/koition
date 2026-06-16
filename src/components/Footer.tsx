@@ -1,3 +1,5 @@
+import KoitionLogo from './KoitionLogo'
+
 export default function Footer() {
   return (
     <footer style={{ background: '#080808', padding: '64px 32px 40px', position: 'relative', zIndex: 2, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -7,14 +9,8 @@ export default function Footer() {
 
           {/* Brand */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-              <svg width="24" height="24" viewBox="0 0 120 120" fill="none">
-                <path fillRule="evenodd" clipRule="evenodd"
-                  d="M60 120C26.8629 120 0 93.1371 0 60V0C22.5654 0 42.2213 12.4569 52.4662 30.8691C38.4788 34.2089 28.0787 46.7902 28.0787 61.8006V63.1443C28.0787 79.9648 41.7146 93.6006 58.5353 93.6006H59.8789L59.8785 61.8006C59.8785 79.3633 74.1159 93.6006 91.6787 93.6006L91.6787 61.8006C91.6787 44.2783 77.5071 30.0661 60 30.0008L60 0H62.5352C94.2722 0 120 25.7279 120 57.4648V60C120 93.1371 93.1371 120 60 120Z"
-                  fill="white"
-                />
-              </svg>
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: '15px', letterSpacing: '0.08em' }}>KOITION</span>
+            <div style={{ marginBottom: '24px' }}>
+              <KoitionLogo size="md" />
             </div>
             <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.75, maxWidth: '280px', marginBottom: '24px' }}>
               (주)코이션은 데이터 엔지니어링 리더로서 기록물 DB 구축 및 지능형 플랫폼을 통해 국가 데이터 가치를 보존합니다.
