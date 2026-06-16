@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import { supabase, isSupabaseReady } from '../../lib/supabase'
+
+const LOCAL_KEY = 'koition_admin_auth'
 
 const navItems = [
   { to: '/admin/dashboard', label: '대시보드',    icon: '▤' },
@@ -12,7 +14,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
 
   const logout = async () => {
-    await supabase.auth.signOut()
+    if (!isSupabaseReady) {
+      localStorage.removeItem(LOCAL_KEY)
+    } else {
+      await supabase.auth.signOut()
+    }
     navigate('/admin', { replace: true })
   }
 

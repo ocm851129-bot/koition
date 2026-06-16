@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../../lib/supabase'
+import { supabase, isSupabaseReady } from '../../lib/supabase'
+
+const LOCAL_KEY = 'koition_admin_auth'
 
 export default function Login() {
   const navigate = useNavigate()
-  const [id, setId]         = useState('')
-  const [pw, setPw]         = useState('')
-  const [error, setError]   = useState('')
+  const [id, setId]           = useState('')
+  const [pw, setPw]           = useState('')
+  const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -14,15 +16,35 @@ export default function Login() {
     setError('')
     setLoading(true)
 
+    // ── Supabase not configured: use hardcoded fallback ──
+    if (!isSupabaseReady) {
+      await new Promise(r => setTimeout(r, 400)) // natural feel
+      if (id === 'admin' && pw === 'koition2026') {
+        localStorage.setItem(LOCAL_KEY, '1')
+        navigate('/admin/dashboard', { replace: true })
+      } else {
+        setError('아이디 또는 비밀번호가 올바르지 않습니다.')
+      }
+      setLoading(false)
+      return
+    }
+
+    // ── Supabase configured: real auth ──
     const email = id === 'admin' ? 'admin@koition.co.kr' : id
     const { error: err } = await supabase.auth.signInWithPassword({ email, password: pw })
-
     setLoading(false)
     if (err) {
       setError('아이디 또는 비밀번호가 올바르지 않습니다.')
     } else {
       navigate('/admin/dashboard', { replace: true })
     }
+  }
+
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '12px 16px',
+    background: '#181818', border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '6px', color: '#fff', fontSize: '14px',
+    outline: 'none', boxSizing: 'border-box',
   }
 
   return (
@@ -53,12 +75,7 @@ export default function Login() {
               onChange={e => setId(e.target.value)}
               placeholder="admin"
               required
-              style={{
-                width: '100%', padding: '12px 16px',
-                background: '#181818', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '6px', color: '#fff', fontSize: '14px',
-                outline: 'none', boxSizing: 'border-box',
-              }}
+              style={inp}
               onFocus={e => (e.target.style.borderColor = 'rgba(255,0,0,0.5)')}
               onBlur={e  => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
             />
@@ -74,19 +91,18 @@ export default function Login() {
               onChange={e => setPw(e.target.value)}
               placeholder="••••••••"
               required
-              style={{
-                width: '100%', padding: '12px 16px',
-                background: '#181818', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '6px', color: '#fff', fontSize: '14px',
-                outline: 'none', boxSizing: 'border-box',
-              }}
+              style={inp}
               onFocus={e => (e.target.style.borderColor = 'rgba(255,0,0,0.5)')}
               onBlur={e  => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
             />
           </div>
 
           {error && (
-            <div style={{ fontSize: '13px', color: '#ff6b6b', padding: '10px 14px', background: 'rgba(255,0,0,0.08)', borderRadius: '6px' }}>
+            <div style={{
+              fontSize: '13px', color: '#ff6b6b',
+              padding: '10px 14px', background: 'rgba(255,0,0,0.08)',
+              borderRadius: '6px', border: '1px solid rgba(255,0,0,0.2)',
+            }}>
               {error}
             </div>
           )}
@@ -97,7 +113,8 @@ export default function Login() {
             style={{
               padding: '13px', background: loading ? '#7a0000' : '#FF0000',
               color: '#fff', border: 'none', borderRadius: '6px',
-              fontSize: '14px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '14px', fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
               marginTop: '4px', letterSpacing: '0.06em',
             }}
           >
