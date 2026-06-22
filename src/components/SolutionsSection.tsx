@@ -13,10 +13,10 @@ const FALLBACK: Solution[] = [
   },
   {
     id: 's2', name: 'Zero Track!', name_en: '비전자기록물 실시간 관리 시스템',
-    badge: null,
+    badge: undefined,
     description: 'RFID 및 모바일 기술을 통해 서고 내 비전자기록물의 반입, 반출, 위치추적을 실시간으로 관리합니다.',
     features: ['RFID 기반 실시간 재고조사', '모바일 단말기 현장 연동', '기록물 무단 반출 차단 시스템', '자동 이관/폐기 프로세스'],
-    featured: false, cta_primary: '솔루션 상세 보기', cta_secondary: null,
+    featured: false, cta_primary: '솔루션 상세 보기', cta_secondary: undefined,
     sort_order: 1, published: true, created_at: '', updated_at: '',
   },
   {
@@ -24,7 +24,7 @@ const FALLBACK: Solution[] = [
     badge: 'Demo Available',
     description: '기록물 및 공문서 내 성명, 주민번호, 주소 등 민감한 개인정보를 AI가 자동으로 탐지하여 마스킹 처리합니다.',
     features: ['딥러닝 기반 텍스트/영역 탐지', '주민등록번호/지문 자동 식별', '대량 문서 고속 일괄 처리', '마스킹 무결성 검증 리포트'],
-    featured: false, cta_primary: '실시간 데모 체험', cta_secondary: null,
+    featured: false, cta_primary: '실시간 데모 체험', cta_secondary: undefined,
     sort_order: 2, published: true, created_at: '', updated_at: '',
   },
   {
@@ -32,7 +32,7 @@ const FALLBACK: Solution[] = [
     badge: 'Demo Available',
     description: '수십만 건의 이미지 데이터 중 사용자가 찾는 이미지와 시각적으로 유사한 데이터를 벡터 임베딩 기술로 즉시 찾아냅니다.',
     features: ['특징점 기반 벡터 검색 엔진', '고문헌/유물 이미지 매칭', '유사 패턴 자동 분류 시스템', '멀티 모달 검색 인터페이스'],
-    featured: false, cta_primary: '실시간 데모 체험', cta_secondary: null,
+    featured: false, cta_primary: '실시간 데모 체험', cta_secondary: undefined,
     sort_order: 3, published: true, created_at: '', updated_at: '',
   },
 ]
