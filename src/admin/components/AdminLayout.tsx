@@ -5,9 +5,13 @@ import { supabase, isSupabaseReady } from '../../lib/supabase'
 const LOCAL_KEY = 'koition_admin_auth'
 
 const navItems = [
-  { to: '/admin/dashboard', label: '대시보드',    icon: '▤' },
-  { to: '/admin/news',      label: '뉴스 관리',   icon: '◈' },
-  { to: '/admin/content',   label: '콘텐츠 편집', icon: '◉' },
+  { to: '/admin/dashboard',  label: '대시보드',       icon: '▤' },
+  { to: '/admin/news',       label: '뉴스·보도자료',  icon: '◈' },
+  { to: '/admin/history',    label: '회사연혁',        icon: '◑' },
+  { to: '/admin/solutions',  label: '솔루션',          icon: '◧' },
+  { to: '/admin/portfolio',  label: '포트폴리오',      icon: '◫' },
+  { to: '/admin/partners',   label: '파트너',          icon: '◎' },
+  { to: '/admin/content',    label: '콘텐츠 편집',     icon: '◉' },
 ]
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
