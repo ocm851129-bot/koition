@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../components/AdminLayout'
 import { supabase, type NewsItem } from '../../lib/supabase'
 
+type Category = '전체' | '뉴스' | '보도자료'
+
 const EMPTY: Omit<NewsItem, 'id' | 'created_at' | 'updated_at'> = {
-  title: '', date: '', tag: 'News', description: '', published: true,
+  title: '', date: '', tag: 'News', category: '뉴스', description: '', link_url: '', published: true,
 }
 
 export default function NewsManager() {
-  const [list, setList]       = useState<NewsItem[]>([])
-  const [form, setForm]       = useState({ ...EMPTY })
-  const [editId, setEditId]   = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [msg, setMsg]         = useState('')
+  const [list, setList]         = useState<NewsItem[]>([])
+  const [form, setForm]         = useState({ ...EMPTY })
+  const [editId, setEditId]     = useState<string | null>(null)
+  const [loading, setLoading]   = useState(false)
+  const [msg, setMsg]           = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [tab, setTab]           = useState<Category>('전체')
 
   const load = async () => {
     const { data } = await supabase.from('news').select('*').order('created_at', { ascending: false })
@@ -24,8 +27,13 @@ export default function NewsManager() {
   const flash = (text: string) => { setMsg(text); setTimeout(() => setMsg(''), 3000) }
 
   const openCreate = () => { setForm({ ...EMPTY }); setEditId(null); setShowForm(true) }
-  const openEdit   = (item: NewsItem) => {
-    setForm({ title: item.title, date: item.date, tag: item.tag, description: item.description, published: item.published })
+  const openEdit = (item: NewsItem) => {
+    setForm({
+      title: item.title, date: item.date, tag: item.tag,
+      category: item.category ?? '뉴스',
+      description: item.description, link_url: item.link_url ?? '',
+      published: item.published,
+    })
     setEditId(item.id)
     setShowForm(true)
   }
@@ -33,11 +41,12 @@ export default function NewsManager() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    const payload = { ...form, link_url: form.link_url || null }
     if (editId) {
-      await supabase.from('news').update({ ...form, updated_at: new Date().toISOString() }).eq('id', editId)
+      await supabase.from('news').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editId)
       flash('수정됐습니다.')
     } else {
-      await supabase.from('news').insert([form])
+      await supabase.from('news').insert([payload])
       flash('등록됐습니다.')
     }
     setShowForm(false)
@@ -57,6 +66,8 @@ export default function NewsManager() {
     load()
   }
 
+  const filtered = tab === '전체' ? list : list.filter(i => (i.category ?? '뉴스') === tab)
+
   const inp: React.CSSProperties = {
     width: '100%', padding: '10px 14px',
     background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)',
@@ -64,18 +75,21 @@ export default function NewsManager() {
     boxSizing: 'border-box',
   }
 
+  const CATEGORIES: Category[] = ['전체', '뉴스', '보도자료']
+  const TAGS = ['News', 'Notice', 'Award', 'Event', 'Press']
+
   return (
     <AdminLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>뉴스 관리</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>뉴스 · 보도자료 관리</h1>
           <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>총 {list.length}건</p>
         </div>
         <button onClick={openCreate} style={{
           padding: '10px 22px', background: '#FF0000', color: '#fff',
           border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
         }}>
-          + 뉴스 추가
+          + 새 글 추가
         </button>
       </div>
 
@@ -89,9 +103,29 @@ export default function NewsManager() {
       {showForm && (
         <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '28px', marginBottom: '28px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', marginBottom: '20px' }}>
-            {editId ? '뉴스 수정' : '새 뉴스 작성'}
+            {editId ? '수정' : '새 글 작성'}
           </h2>
           <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
+            {/* 카테고리 */}
+            <div>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '8px' }}>카테고리 *</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {(['뉴스', '보도자료'] as const).map(cat => (
+                  <button
+                    key={cat} type="button"
+                    onClick={() => setForm(f => ({ ...f, category: cat }))}
+                    style={{
+                      padding: '8px 20px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                      background: form.category === cat ? '#FF0000' : 'rgba(255,255,255,0.05)',
+                      color: form.category === cat ? '#fff' : 'rgba(255,255,255,0.5)',
+                      border: form.category === cat ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                    }}
+                  >{cat}</button>
+                ))}
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               <div>
                 <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '6px' }}>제목 *</label>
@@ -102,11 +136,12 @@ export default function NewsManager() {
                 <input style={inp} value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required placeholder="YYYY.MM.DD" />
               </div>
             </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '14px' }}>
               <div>
                 <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '6px' }}>태그</label>
                 <select style={{ ...inp, cursor: 'pointer' }} value={form.tag} onChange={e => setForm(f => ({ ...f, tag: e.target.value }))}>
-                  {['News', 'Notice', 'Award', 'Event', 'Press'].map(t => <option key={t} value={t}>{t}</option>)}
+                  {TAGS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
@@ -114,10 +149,22 @@ export default function NewsManager() {
                 <input style={inp} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
               </div>
             </div>
+
+            <div>
+              <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '6px' }}>
+                원문 링크 <span style={{ color: 'rgba(255,255,255,0.25)' }}>(선택 — 클릭 시 이동할 외부 URL)</span>
+              </label>
+              <input
+                style={inp} value={form.link_url ?? ''} placeholder="https://..."
+                onChange={e => setForm(f => ({ ...f, link_url: e.target.value }))}
+              />
+            </div>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <input type="checkbox" id="pub" checked={form.published} onChange={e => setForm(f => ({ ...f, published: e.target.checked }))} />
               <label htmlFor="pub" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>공개</label>
             </div>
+
             <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
               <button type="submit" disabled={loading} style={{
                 padding: '10px 24px', background: '#FF0000', color: '#fff',
@@ -136,25 +183,50 @@ export default function NewsManager() {
         </div>
       )}
 
+      {/* Category Tabs */}
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
+        {CATEGORIES.map(cat => (
+          <button key={cat} onClick={() => setTab(cat)} style={{
+            padding: '7px 18px', borderRadius: '100px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', border: 'none',
+            background: tab === cat ? '#FF0000' : 'rgba(255,255,255,0.06)',
+            color: tab === cat ? '#fff' : 'rgba(255,255,255,0.45)',
+          }}>
+            {cat} {cat === '전체' ? list.length : list.filter(i => (i.category ?? '뉴스') === cat).length}
+          </button>
+        ))}
+      </div>
+
       {/* List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', overflow: 'hidden' }}>
-        {list.length === 0 && (
+        {filtered.length === 0 && (
           <div style={{ padding: '40px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: '14px', background: '#111' }}>
-            등록된 뉴스가 없습니다.
+            등록된 항목이 없습니다.
           </div>
         )}
-        {list.map(item => (
+        {filtered.map(item => (
           <div key={item.id} style={{
             display: 'flex', alignItems: 'center', gap: '16px',
             padding: '16px 20px', background: '#111',
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff', marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {item.title}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <span style={{
+                  fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px',
+                  background: (item.category ?? '뉴스') === '보도자료' ? 'rgba(59,130,246,0.15)' : 'rgba(255,0,0,0.12)',
+                  color: (item.category ?? '뉴스') === '보도자료' ? '#60a5fa' : '#FF0000',
+                }}>
+                  {item.category ?? '뉴스'}
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.title}
+                </span>
               </div>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <span style={{ fontSize: '11px', color: '#FF0000', padding: '2px 8px', border: '1px solid rgba(255,0,0,0.3)', borderRadius: '100px' }}>{item.tag}</span>
                 <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>{item.date}</span>
+                {item.link_url && (
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>🔗 링크 있음</span>
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
