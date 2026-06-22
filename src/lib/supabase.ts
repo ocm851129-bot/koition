@@ -5,7 +5,66 @@ export type NewsItem = {
   title: string
   date: string
   tag: string
+  category: '뉴스' | '보도자료'
   description: string
+  link_url?: string
+  published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type HistoryEvent = {
+  id: string
+  year: string
+  month: string
+  era: string
+  title: string
+  tag: string
+  sort_order: number
+  published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type Solution = {
+  id: string
+  name: string
+  name_en: string
+  badge?: string
+  description: string
+  features: string[]
+  featured: boolean
+  cta_primary?: string
+  cta_secondary?: string
+  sort_order: number
+  published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type Portfolio = {
+  id: string
+  title: string
+  client?: string
+  category: string
+  description: string
+  image_url?: string
+  year?: string
+  tags: string[]
+  link_url?: string
+  sort_order: number
+  published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type Partner = {
+  id: string
+  name: string
+  logo_url?: string
+  category: string
+  website_url?: string
+  sort_order: number
   published: boolean
   created_at: string
   updated_at: string
@@ -21,7 +80,6 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 export const isSupabaseReady = !!(url && key && url.startsWith('https://'))
 
-// Fully thenable mock — used when Supabase env vars are not set
 function makeMockClient() {
   const EMPTY = { data: [], error: null, count: 0 }
 
