@@ -19,7 +19,7 @@ export default function Login() {
     // ── Supabase not configured: use hardcoded fallback ──
     if (!isSupabaseReady) {
       await new Promise(r => setTimeout(r, 400)) // natural feel
-      if (id === 'admin' && pw === 'koition2026') {
+      if (id === 'admin' && pw === '1001') {
         localStorage.setItem(LOCAL_KEY, '1')
         navigate('/admin/dashboard', { replace: true })
       } else {
