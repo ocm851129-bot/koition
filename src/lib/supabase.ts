@@ -80,27 +80,97 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 export const isSupabaseReady = !!(url && key && url.startsWith('https://'))
 
-function makeMockClient() {
-  const EMPTY = { data: [], error: null, count: 0 }
+// localStorage-backed client — fully functional CRUD without Supabase
+function makeLocalClient() {
+  const P = 'koition_cms_'
 
-  function chain(): Record<string, unknown> {
-    const p = Promise.resolve(EMPTY)
-    const obj: Record<string, unknown> = {}
-    const methods = ['select','eq','neq','order','limit','insert','update','delete','upsert','single','maybeSingle']
-    methods.forEach(m => { obj[m] = () => chain() })
-    obj['then']    = (res: unknown, rej: unknown) => p.then(res as never, rej as never)
-    obj['catch']   = (fn: unknown) => p.catch(fn as never)
-    obj['finally'] = (fn: unknown) => p.finally(fn as never)
-    return obj
+  const getRows = (table: string): Record<string, unknown>[] => {
+    try { return JSON.parse(localStorage.getItem(P + table) ?? '[]') } catch { return [] }
+  }
+  const setRows = (table: string, rows: Record<string, unknown>[]) =>
+    localStorage.setItem(P + table, JSON.stringify(rows))
+
+  const cmp = (a: unknown, b: unknown) => {
+    if (typeof a === 'number' && typeof b === 'number') return a < b ? -1 : a > b ? 1 : 0
+    const as = String(a ?? ''), bs = String(b ?? '')
+    return as < bs ? -1 : as > bs ? 1 : 0
+  }
+
+  const from = (table: string) => {
+    type Op = 'select' | 'insert' | 'update' | 'delete'
+    const state: {
+      op: Op
+      filters: { col: string; val: unknown }[]
+      orders: { col: string; asc: boolean }[]
+      payload: unknown
+    } = { op: 'select', filters: [], orders: [], payload: null }
+
+    const match = (row: Record<string, unknown>) =>
+      state.filters.every(f => row[f.col] === f.val)
+
+    const execute = () => {
+      const rows = getRows(table)
+
+      if (state.op === 'select') {
+        let result = rows.filter(match)
+        for (const ord of [...state.orders].reverse()) {
+          result = result.sort((a, b) => (ord.asc ? 1 : -1) * cmp(a[ord.col], b[ord.col]))
+        }
+        return { data: result, error: null }
+      }
+
+      if (state.op === 'insert') {
+        const items = (Array.isArray(state.payload) ? state.payload : [state.payload]) as Record<string, unknown>[]
+        const now = new Date().toISOString()
+        const newRows = items.map(item => ({
+          id: crypto.randomUUID(), created_at: now, updated_at: now, ...item,
+        }))
+        setRows(table, [...rows, ...newRows])
+        return { data: newRows, error: null }
+      }
+
+      if (state.op === 'update') {
+        const updated = rows.map(r => match(r) ? { ...r, ...(state.payload as Record<string, unknown>) } : r)
+        setRows(table, updated)
+        return { data: updated.filter(match), error: null }
+      }
+
+      if (state.op === 'delete') {
+        setRows(table, rows.filter(r => !match(r)))
+        return { data: [], error: null }
+      }
+
+      return { data: [], error: null }
+    }
+
+    const chain: Record<string, unknown> = {
+      select:      ()                    => { state.op = 'select';                          return chain },
+      eq:          (col: string, val: unknown) => { state.filters.push({ col, val });       return chain },
+      neq:         ()                    =>                                                         chain,
+      order:       (col: string, opts?: { ascending?: boolean }) => {
+        state.orders.push({ col, asc: opts?.ascending ?? true }); return chain
+      },
+      limit:       ()                    =>                                                         chain,
+      insert:      (d: unknown)          => { state.op = 'insert';  state.payload = d;      return chain },
+      update:      (d: unknown)          => { state.op = 'update';  state.payload = d;      return chain },
+      delete:      ()                    => { state.op = 'delete';                          return chain },
+      upsert:      (d: unknown)          => { state.op = 'insert';  state.payload = Array.isArray(d) ? d : [d]; return chain },
+      single:      ()                    =>                                                         chain,
+      maybeSingle: ()                    =>                                                         chain,
+      then:    (res: unknown, rej: unknown) => Promise.resolve(execute()).then(res as never, rej as never),
+      catch:   (fn: unknown)               => Promise.resolve(execute()).catch(fn as never),
+      finally: (fn: unknown)               => Promise.resolve(execute()).finally(fn as never),
+    }
+    return chain
   }
 
   return {
-    from: () => chain(),
+    from,
     auth: {
-      getSession:           () => Promise.resolve({ data: { session: null }, error: null }),
-      signInWithPassword:   () => Promise.resolve({ data: null, error: { message: 'Supabase not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.' } }),
-      signOut:              () => Promise.resolve({ error: null }),
-      onAuthStateChange:    (_e: unknown, _cb: unknown) => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      getSession:         () => Promise.resolve({ data: { session: null }, error: null }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: { message: 'local mode' } }),
+      signOut:            () => Promise.resolve({ error: null }),
+      onAuthStateChange:  (_e: unknown, _cb: unknown) => ({ data: { subscription: { unsubscribe: () => {} } } }),
     },
   } as unknown as SupabaseClient
 }
@@ -108,9 +178,9 @@ function makeMockClient() {
 let _supabase: SupabaseClient
 
 try {
-  _supabase = isSupabaseReady ? createClient(url, key) : makeMockClient()
+  _supabase = isSupabaseReady ? createClient(url, key) : makeLocalClient()
 } catch {
-  _supabase = makeMockClient()
+  _supabase = makeLocalClient()
 }
 
 export const supabase = _supabase
